@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../utils/date_time_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/state_widgets.dart';
+import '../widgets/network_image.dart';
 import './story_detail_screen.dart';
 import './add_story_screen.dart';
 
@@ -139,9 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(story.photoUrl),
-              radius: 30,
+            leading: ClipOval(
+              child: NetworkImageWithLoader(
+                imageUrl: story.photoUrl,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
             ),
             title: Text(story.name),
             subtitle: Column(

@@ -6,6 +6,7 @@ import '../providers/story_detail_provider.dart';
 import '../utils/date_time_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/state_widgets.dart';
+import '../widgets/network_image.dart';
 
 class StoryDetailScreen extends StatelessWidget {
   final Story story;
@@ -48,14 +49,11 @@ class StoryDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: ClipRRect(
+                      child: NetworkImageWithLoader(
+                        imageUrl: detail.photoUrl,
+                        width: 250,
+                        height: 250,
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          detail.photoUrl,
-                          width: 250,
-                          height: 250,
-                          fit: BoxFit.cover,
-                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
