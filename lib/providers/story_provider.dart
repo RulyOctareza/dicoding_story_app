@@ -74,7 +74,7 @@ class StoryProvider extends ChangeNotifier {
       await fetchStories(token);
     } catch (e) {
       _error = e.toString();
-      _safeNotify(); // Notify untuk menampilkan error
+      _safeNotify(); 
     } finally {
       _setLoading(false);
     }

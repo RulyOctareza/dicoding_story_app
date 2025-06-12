@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer;
 import '../providers/session_provider.dart';
 
@@ -20,16 +21,13 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     developer.log('SplashScreen initialized', name: 'SplashScreen');
 
-    // Initialize animation controller
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
-    // Setup fade animation
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
-    // Start animation and check session
     WidgetsBinding.instance.addPostFrameCallback((_) {
       developer.log(
         'Starting animation and session check',
@@ -59,7 +57,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     try {
-      // Wait for both animation and delay
       await Future.wait([
         Future.delayed(const Duration(seconds: 3)),
         _controller.forward().orCancel,
@@ -69,13 +66,13 @@ class _SplashScreenState extends State<SplashScreen>
 
       if (sessionProvider.token != null) {
         developer.log('Token found, navigating to home', name: 'SplashScreen');
-        Navigator.of(context).pushReplacementNamed('/home');
+        context.goNamed('home');
       } else {
         developer.log(
           'No token found, navigating to login',
           name: 'SplashScreen',
         );
-        Navigator.of(context).pushReplacementNamed('/login');
+        context.goNamed('login');
       }
     } catch (e) {
       developer.log(
@@ -83,9 +80,9 @@ class _SplashScreenState extends State<SplashScreen>
         name: 'SplashScreen',
         error: e,
       );
-      // Handle any animation cancellation gracefully
+
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        context.goNamed('login');
       }
     }
   }

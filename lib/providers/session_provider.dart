@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/story_service.dart';
 
@@ -68,7 +69,7 @@ class SessionProvider extends ChangeNotifier {
       if (context.mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           developer.log('Navigating to home screen', name: 'SessionProvider');
-          Navigator.of(context).pushReplacementNamed('/home');
+          context.goNamed('home');
         });
       }
     } catch (e) {
@@ -110,11 +111,11 @@ class SessionProvider extends ChangeNotifier {
   }
 
   void goToLogin(BuildContext context) {
-    Navigator.of(context).pushReplacementNamed('/login');
+    context.goNamed('login');
   }
 
   void goToRegister(BuildContext context) {
-    Navigator.of(context).pushReplacementNamed('/register');
+    context.goNamed('register');
   }
 
   Future<void> logout(BuildContext context) async {
@@ -127,7 +128,7 @@ class SessionProvider extends ChangeNotifier {
 
     if (context.mounted) {
       developer.log('Navigating to login screen', name: 'SessionProvider');
-      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      context.goNamed('login');
     }
   }
 }

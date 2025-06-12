@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
@@ -49,7 +50,7 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
         _imageFile!,
       );
       if (mounted) {
-        Navigator.of(context).pop();
+        context.replaceNamed('home');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Story uploaded successfully!')),
         );

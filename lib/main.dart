@@ -34,11 +34,9 @@ class MainApp extends StatelessWidget {
       ],
       child: Consumer<LocaleProvider>(
         builder:
-            (context, localeProvider, child) => MaterialApp(
+            (context, localeProvider, child) => MaterialApp.router(
               debugShowCheckedModeBanner: false,
-              navigatorKey: AppRouter.navigatorKey,
-              onGenerateRoute: AppRouter.onGenerateRoute,
-              initialRoute: '/splash',
+              routerConfig: AppRouter.router,
               locale: localeProvider.locale,
               supportedLocales: const [Locale('en'), Locale('id')],
               localizationsDelegates: [

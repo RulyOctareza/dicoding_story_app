@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:developer' as developer;
 import '../providers/session_provider.dart';
 import '../providers/story_provider.dart';
@@ -10,8 +11,6 @@ import '../utils/date_time_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/state_widgets.dart';
 import '../widgets/network_image.dart';
-import './story_detail_screen.dart';
-import './add_story_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -121,10 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddStoryScreen()),
-          );
+          context.goNamed('add-story');
         },
         child: const Icon(Icons.add),
       ),
@@ -183,11 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             isThreeLine: true,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => StoryDetailScreen(story: story),
-                ),
+              context.goNamed(
+                'story-detail',
+                pathParameters: {'storyId': story.id},
+                extra: story,
               );
             },
           ),
