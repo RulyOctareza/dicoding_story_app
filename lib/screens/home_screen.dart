@@ -6,6 +6,7 @@ import '../providers/story_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/notification_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/date_time_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/state_widgets.dart';
 import './story_detail_screen.dart';
@@ -143,11 +144,22 @@ class _HomeScreenState extends State<HomeScreen> {
               radius: 30,
             ),
             title: Text(story.name),
-            subtitle: Text(
-              story.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  story.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateTimeUtils.getRelativeTime(story.createdAt),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
             ),
+            isThreeLine: true,
             onTap: () {
               Navigator.push(
                 context,

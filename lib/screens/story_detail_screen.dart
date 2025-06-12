@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/story.dart';
 import '../providers/session_provider.dart';
 import '../providers/story_detail_provider.dart';
+import '../utils/date_time_utils.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/state_widgets.dart';
 
 class StoryDetailScreen extends StatelessWidget {
   final Story story;
@@ -22,19 +25,24 @@ class StoryDetailScreen extends StatelessWidget {
       child: Consumer<StoryDetailProvider>(
         builder: (context, detailProvider, _) {
           if (detailProvider.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: LoadingState());
           } else if (detailProvider.error != null) {
             return Scaffold(
-              appBar: AppBar(),
-              body: Center(child: Text(detailProvider.error!)),
+              appBar: const CustomAppBar(title: ''),
+              body: ErrorState(
+                message: detailProvider.error!,
+                onRetry:
+                    () => detailProvider.fetchDetail(
+                      sessionProvider.token!,
+                      story.id,
+                    ),
+              ),
             );
           } else if (detailProvider.story != null) {
             final detail = detailProvider.story!;
             return Scaffold(
-              appBar: AppBar(title: Text(detail.name)),
-              body: Padding(
+              appBar: CustomAppBar(title: detail.name),
+              body: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,27 +58,27 @@ class StoryDetailScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     Text(
-                      detail.name,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      'Posted by ${detail.name}',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
+                    Text(
+                      DateTimeUtils.getRelativeTime(detail.createdAt),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       detail.description,
                       style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Created at: ${detail.createdAt}',
-                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
             );
           } else {
-            return const Scaffold(body: Center(child: Text('No data')));
+            return const Scaffold(body: ErrorState(message: 'Story not found'));
           }
         },
       ),

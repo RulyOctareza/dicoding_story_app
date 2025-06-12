@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/validation_utils.dart';
+import '../widgets/custom_app_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,49 +37,55 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: loc.translate('email'),
+                    prefixIcon: const Icon(Icons.email),
                     border: const OutlineInputBorder(),
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Email required'
-                              : null,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  validator: ValidationUtils.validateEmail,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: loc.translate('password'),
+                    prefixIcon: const Icon(Icons.lock),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      onPressed:
-                          () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.isEmpty
-                              ? 'Password required'
-                              : null,
+                  obscureText: _obscurePassword,
+                  validator: ValidationUtils.validatePassword,
                 ),
                 const SizedBox(height: 24),
+                if (sessionProvider.errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      sessionProvider.errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed:
                         sessionProvider.isLoading
                             ? null
-                            : () async {
+                            : () {
                               if (_formKey.currentState!.validate()) {
-                                await sessionProvider.login(
+                                sessionProvider.login(
                                   _emailController.text,
                                   _passwordController.text,
                                   context,
@@ -86,30 +94,31 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                     child:
                         sessionProvider.isLoading
-                            ? const CircularProgressIndicator(
-                              color: Colors.white,
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                             : Text(loc.translate('login')),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => sessionProvider.goToRegister(context),
                   child: Text(loc.translate('register')),
                 ),
-                if (sessionProvider.errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text(
-                      sessionProvider.errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }
