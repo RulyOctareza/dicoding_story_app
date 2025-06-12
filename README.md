@@ -6,16 +6,31 @@
 
 <table>
   <tr>
-    <td><img src="https://github.com/user/repo/screenshots/splash.png" width="200"/></td>
-    <td><img src="https://github.com/user/repo/screenshots/login.png" width="200"/></td>
-    <td><img src="https://github.com/user/repo/screenshots/stories.png" width="200"/></td>
-    <td><img src="https://github.com/user/repo/screenshots/add_story.png" width="200"/></td>
+    <td><img src="screenshots/splash_screen.png" width="200"/></td>
+    <td><img src="screenshots/login_screen_en.png" width="200"/></td>
+    <td><img src="screenshots/login_screen_id.png" width="200"/></td>
+    <td><img src="screenshots/stories_list_id.png" width="200"/></td>
   </tr>
   <tr>
     <td align="center">Splash Screen</td>
-    <td align="center">Login Screen</td>
-    <td align="center">Stories List</td>
-    <td align="center">Add Story</td>
+    <td align="center">Login (English)</td>
+    <td align="center">Login (Indonesian)</td>
+    <td align="center">Stories (Indonesian)</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="screenshots/stories_list_en.png" width="200"/></td>
+    <td><img src="screenshots/add_story_camera.png" width="200"/></td>
+    <td><img src="screenshots/add_story_gallery.png" width="200"/></td>
+    <td><img src="screenshots/notifications.png" width="200"/></td>
+  </tr>
+  <tr>
+    <td align="center">Stories (English)</td>
+    <td align="center">Add Story (Camera)</td>
+    <td align="center">Add Story (Gallery)</td>
+    <td align="center">Notifications</td>
   </tr>
 </table>
 
