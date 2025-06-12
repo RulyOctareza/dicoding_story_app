@@ -25,7 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final loc = AppLocalizations.of(context);
     final sessionProvider = Provider.of<SessionProvider>(context);
     final localeProvider = Provider.of<LocaleProvider>(context);
-    
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -70,10 +70,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: 'Name',
                   prefixIcon: Icons.person,
                   textInputAction: TextInputAction.next,
-                  validator: (value) => ValidationUtils.validateRequired(
-                    value,
-                    'Name',
-                  ),
+                  validator:
+                      (value) =>
+                          ValidationUtils.validateRequired(value, 'Name'),
                 ),
                 const SizedBox(height: 16),
                 CustomTextFormField(
@@ -117,25 +116,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: sessionProvider.isLoading
-                        ? null
-                        : () {
-                            if (_formKey.currentState!.validate()) {
-                              sessionProvider.register(
-                                _nameController.text,
-                                _emailController.text,
-                                _passwordController.text,
-                                context,
-                              );
-                            }
-                          },
-                    child: sessionProvider.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(loc.translate('register')),
+                    onPressed:
+                        sessionProvider.isLoading
+                            ? null
+                            : () {
+                              if (_formKey.currentState!.validate()) {
+                                sessionProvider.register(
+                                  _nameController.text,
+                                  _emailController.text,
+                                  _passwordController.text,
+                                  context,
+                                );
+                              }
+                            },
+                    child:
+                        sessionProvider.isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : Text(loc.translate('register')),
                   ),
                 ),
                 const SizedBox(height: 16),
