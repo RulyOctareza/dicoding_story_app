@@ -73,8 +73,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? Icons.notifications_active
                   : Icons.notifications_off,
             ),
-            onPressed: () {
-              notificationProvider.toggleNotifications();
+            onPressed: () async {
+              try {
+                await notificationProvider.toggleNotifications();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        notificationProvider.isEnabled
+                            ? 'Notifications enabled'
+                            : 'Notifications disabled',
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             tooltip:
                 notificationProvider.isEnabled
@@ -154,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const SizedBox(height: 4),
                 Text(
-                  DateTimeUtils.getRelativeTime(story.createdAt),
+                  DateTimeUtils.getRelativeTime(story.createdAt, context),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],

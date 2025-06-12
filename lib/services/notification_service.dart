@@ -1,57 +1,102 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
+import 'permission_service.dart';
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _plugin =
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  static Future<void> init(BuildContext context) async {
+  static Future<void> init() async {
+    developer.log('Initializing notifications...', name: 'NotificationService');
+
+    // Request permission for Android 13+
+    final hasPermission =
+        await PermissionService.requestNotificationPermission();
+    if (!hasPermission) {
+      developer.log(
+        'Notification permission denied',
+        name: 'NotificationService',
+      );
+      return;
+    }
+
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
+
     const InitializationSettings settings = InitializationSettings(
       android: androidSettings,
     );
-    await _plugin.initialize(settings);
+
+    await _notificationsPlugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse details) {
+        developer.log(
+          'Notification clicked: ${details.payload}',
+          name: 'NotificationService',
+        );
+      },
+    );
   }
 
   static Future<void> showStoryNotification() async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
-          'story_channel',
-          'Story Notifications',
-          channelDescription: 'Notification for new stories',
-          importance: Importance.max,
+          'story_updates',
+          'Story Updates',
+          channelDescription: 'Notifications for new story updates',
+          importance: Importance.high,
           priority: Priority.high,
+          ticker: 'Story App',
         );
+
     const NotificationDetails details = NotificationDetails(
       android: androidDetails,
     );
-    await _plugin.show(
+
+    await _notificationsPlugin.show(
       0,
-      'Seseorang upload story baru',
-      'Buka aplikasi untuk melihat cerita terbaru!',
+      'Ada cerita baru!',
+      'Buka aplikasi untuk melihat cerita terbaru',
       details,
     );
   }
 
   static Future<void> scheduleStoryNotification() async {
-    await _plugin.periodicallyShow(
+    developer.log(
+      'Scheduling periodic notification',
+      name: 'NotificationService',
+    );
+
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'story_updates',
+          'Story Updates',
+          channelDescription: 'Notifications for new story updates',
+          importance: Importance.high,
+          priority: Priority.high,
+        );
+
+    const NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.periodicallyShow(
       1,
-      'Seseorang upload story baru',
-      'Buka aplikasi untuk melihat cerita terbaru!',
+      'Story App',
+      'Ada cerita baru yang menunggu untuk dibaca!',
       RepeatInterval.hourly,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'story_channel',
-          'Story Notifications',
-          channelDescription: 'Notification for new stories',
-        ),
-      ),
+      details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+
+    developer.log(
+      'Periodic notification scheduled',
+      name: 'NotificationService',
     );
   }
 
   static Future<void> cancelAllNotifications() async {
-    await _plugin.cancelAll();
+    developer.log('Cancelling all notifications', name: 'NotificationService');
+    await _notificationsPlugin.cancelAll();
   }
 }

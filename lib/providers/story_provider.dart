@@ -1,14 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/story.dart';
 import '../services/story_service.dart';
+import '../services/notification_service.dart';
 
 class StoryProvider extends ChangeNotifier {
   final StoryService _service = StoryService();
   List<Story> _stories = [];
   bool _isLoading = false;
   String? _error;
+  static const String _lastStoryIdKey = 'last_story_id';
 
   List<Story> get stories => _stories;
   bool get isLoading => _isLoading;
@@ -27,11 +30,31 @@ class StoryProvider extends ChangeNotifier {
     _safeNotify();
   }
 
+  Future<void> _checkForNewStories(List<Story> newStories) async {
+    if (newStories.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final lastStoryId = prefs.getString(_lastStoryIdKey);
+    final latestStory =
+        newStories.first; // Assuming stories are ordered by date desc
+
+    // Save the latest story ID
+    await prefs.setString(_lastStoryIdKey, latestStory.id);
+
+    // If we have a previous story ID and it's different from the latest
+    // and there are new stories, show a notification
+    if (lastStoryId != null && lastStoryId != latestStory.id) {
+      await NotificationService.showStoryNotification();
+    }
+  }
+
   Future<void> fetchStories(String token) async {
     _setLoading(true);
     _error = null;
     try {
-      _stories = await _service.fetchStories(token);
+      final newStories = await _service.fetchStories(token);
+      _stories = newStories;
+      await _checkForNewStories(newStories);
     } catch (e) {
       _error = e.toString();
     } finally {

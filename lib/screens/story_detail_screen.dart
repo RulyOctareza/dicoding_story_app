@@ -63,7 +63,7 @@ class StoryDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      DateTimeUtils.getRelativeTime(detail.createdAt),
+                      DateTimeUtils.getRelativeTime(detail.createdAt, context),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),

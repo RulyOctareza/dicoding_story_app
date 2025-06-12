@@ -9,9 +9,12 @@ import 'providers/story_detail_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/notification_provider.dart';
 import 'services/notification_service.dart';
+import 'services/background_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.init();
+  await BackgroundService.initialize();
   runApp(const MainApp());
 }
 
@@ -20,7 +23,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    NotificationService.init(context);
+    NotificationService.init();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SessionProvider()),
