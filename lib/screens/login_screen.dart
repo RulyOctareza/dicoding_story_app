@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/validation_utils.dart';
-import '../widgets/custom_app_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
