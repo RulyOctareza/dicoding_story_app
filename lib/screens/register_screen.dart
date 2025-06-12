@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
+import '../providers/locale_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/validation_utils.dart';
+import '../widgets/form_fields.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -22,6 +24,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final sessionProvider = Provider.of<SessionProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
+    
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -31,54 +35,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.account_circle, size: 80),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    prefixIcon: const Icon(Icons.person),
-                    border: const OutlineInputBorder(),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  validator:
-                      (value) =>
-                          ValidationUtils.validateRequired(value, 'Name'),
+                // Language Switch
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(loc.translate('language')),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: localeProvider.isIndonesian,
+                      onChanged: (value) {
+                        localeProvider.setLocale(value ? 'id' : 'en');
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: loc.translate('email'),
-                    prefixIcon: const Icon(Icons.email),
-                    border: const OutlineInputBorder(),
+                const Icon(Icons.account_circle, size: 80),
+                const SizedBox(height: 16),
+                Text(
+                  loc.translate('story_app'),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.translate('please_register'),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                CustomTextFormField(
+                  controller: _nameController,
+                  label: 'Name',
+                  prefixIcon: Icons.person,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) => ValidationUtils.validateRequired(
+                    value,
+                    'Name',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                CustomTextFormField(
+                  controller: _emailController,
+                  label: loc.translate('email'),
+                  prefixIcon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: ValidationUtils.validateEmail,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                CustomTextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: loc.translate('password'),
-                    prefixIcon: const Icon(Icons.lock),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
+                  label: loc.translate('password'),
+                  prefixIcon: Icons.lock,
                   obscureText: _obscurePassword,
                   validator: ValidationUtils.validatePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(height: 24),
                 if (sessionProvider.errorMessage != null)
@@ -93,27 +117,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:
-                        sessionProvider.isLoading
-                            ? null
-                            : () {
-                              if (_formKey.currentState!.validate()) {
-                                sessionProvider.register(
-                                  _nameController.text,
-                                  _emailController.text,
-                                  _passwordController.text,
-                                  context,
-                                );
-                              }
-                            },
-                    child:
-                        sessionProvider.isLoading
-                            ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                            : Text(loc.translate('register')),
+                    onPressed: sessionProvider.isLoading
+                        ? null
+                        : () {
+                            if (_formKey.currentState!.validate()) {
+                              sessionProvider.register(
+                                _nameController.text,
+                                _emailController.text,
+                                _passwordController.text,
+                                context,
+                              );
+                            }
+                          },
+                    child: sessionProvider.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(loc.translate('register')),
                   ),
                 ),
                 const SizedBox(height: 16),

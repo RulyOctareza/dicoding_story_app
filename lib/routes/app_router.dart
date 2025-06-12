@@ -3,6 +3,7 @@ import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/home_screen.dart';
+import 'page_transitions.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -11,16 +12,16 @@ class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/splash':
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return FadePageRoute(page: const SplashScreen());
       case '/login':
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return SlidePageRoute(page: const LoginScreen());
       case '/register':
-        return MaterialPageRoute(builder: (_) => const RegisterScreen());
+        return SlidePageRoute(page: const RegisterScreen());
       case '/home':
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return FadePageRoute(page: const HomeScreen());
       case '/':
       default:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return FadePageRoute(page: const SplashScreen());
     }
   }
 }

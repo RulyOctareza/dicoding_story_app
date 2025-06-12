@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
+import '../providers/locale_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/validation_utils.dart';
+import '../widgets/form_fields.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final sessionProvider = Provider.of<SessionProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -30,41 +33,63 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Language Switch
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(loc.translate('language')),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: localeProvider.isIndonesian,
+                      onChanged: (value) {
+                        localeProvider.setLocale(value ? 'id' : 'en');
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 const Icon(Icons.account_circle, size: 80),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: loc.translate('email'),
-                    prefixIcon: const Icon(Icons.email),
-                    border: const OutlineInputBorder(),
+                const SizedBox(height: 16),
+                Text(
+                  loc.translate('story_app'),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.translate('please_login'),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                CustomTextFormField(
+                  controller: _emailController,
+                  label: loc.translate('email'),
+                  prefixIcon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: ValidationUtils.validateEmail,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                CustomTextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: loc.translate('password'),
-                    prefixIcon: const Icon(Icons.lock),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
+                  label: loc.translate('password'),
+                  prefixIcon: Icons.lock,
                   obscureText: _obscurePassword,
                   validator: ValidationUtils.validatePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(height: 24),
                 if (sessionProvider.errorMessage != null)

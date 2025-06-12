@@ -147,11 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  story.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
                 const SizedBox(height: 4),
                 Text(
                   DateTimeUtils.getRelativeTime(story.createdAt),
