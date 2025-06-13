@@ -11,6 +11,7 @@ import '../utils/date_time_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/state_widgets.dart';
 import '../widgets/network_image.dart';
+import '../widgets/premium_features.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,11 +20,29 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
     developer.log('HomeScreen initialized', name: 'HomeScreen');
+    
+    
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    
+    _scrollController.addListener(_onScroll);
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final sessionProvider = Provider.of<SessionProvider>(
         context,
@@ -32,9 +51,46 @@ class _HomeScreenState extends State<HomeScreen> {
       final storyProvider = Provider.of<StoryProvider>(context, listen: false);
       if (sessionProvider.token != null) {
         developer.log('Fetching stories...', name: 'HomeScreen');
-        storyProvider.fetchStories(sessionProvider.token!);
+        storyProvider.fetchStories(sessionProvider.token!).then((_) {
+          _animationController.forward();
+        });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreStories();
+    }
+  }
+
+  Future<void> _loadMoreStories() async {
+    if (_isLoadingMore) return;
+
+    final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
+    final storyProvider = Provider.of<StoryProvider>(context, listen: false);
+    
+    if (sessionProvider.token != null && storyProvider.hasMoreData) {
+      setState(() {
+        _isLoadingMore = true;
+      });
+
+      await storyProvider.loadMoreStories(sessionProvider.token!);
+
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
   }
 
   @override
@@ -49,7 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: CustomAppBar(
         title: loc.translate('stories'),
         actions: [
-          // Language Switch
+          
+          const FlavorBadge(),
+          const SizedBox(width: 8),
+          
           Row(
             children: [
               Text(localeProvider.isIndonesian ? 'ID' : 'EN'),
@@ -65,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          // Notification Toggle
+          
           IconButton(
             icon: Icon(
               notificationProvider.isEnabled
@@ -102,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? 'Disable Notifications'
                     : 'Enable Notifications',
           ),
-          // Logout Button
+          
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => sessionProvider.logout(context),
@@ -114,25 +173,33 @@ class _HomeScreenState extends State<HomeScreen> {
         onRefresh: () async {
           if (sessionProvider.token != null) {
             await storyProvider.fetchStories(sessionProvider.token!);
+            _animationController.reset();
+            _animationController.forward();
           }
         },
-        child: _buildBody(storyProvider, loc),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: _buildBody(storyProvider, loc),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.goNamed('add-story');
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: ScaleTransition(
+        scale: _fadeAnimation,
+        child: FloatingActionButton(
+          onPressed: () {
+            context.goNamed('home-add-story');
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
 
   Widget _buildBody(StoryProvider storyProvider, AppLocalizations loc) {
-    if (storyProvider.isLoading) {
+    if (storyProvider.isLoading && storyProvider.stories.isEmpty) {
       return const LoadingState();
     }
 
-    if (storyProvider.error != null) {
+    if (storyProvider.error != null && storyProvider.stories.isEmpty) {
       return ErrorState(
         message: storyProvider.error!,
         onRetry: () {
@@ -152,39 +219,119 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return ListView.builder(
-      itemCount: storyProvider.stories.length,
+      controller: _scrollController,
+      itemCount: storyProvider.stories.length + (_isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        
+        if (index == storyProvider.stories.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
         final story = storyProvider.stories[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            leading: ClipOval(
-              child: NetworkImageWithLoader(
-                imageUrl: story.photoUrl,
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
+        return _buildStoryCard(story, index);
+      },
+    );
+  }
+
+  Widget _buildStoryCard(story, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 300 + (index * 100)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 50 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              elevation: 2,
+              child: InkWell(
+                onTap: () {
+                  context.goNamed(
+                    'home-story-detail',
+                    pathParameters: {'storyId': story.id},
+                    extra: story,
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      
+                      Hero(
+                        tag: 'story-${story.id}',
+                        child: ClipOval(
+                          child: NetworkImageWithLoader(
+                            imageUrl: story.photoUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              story.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              story.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  size: 14,
+                                  color: Colors.grey[500],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  DateTimeUtils.getRelativeTime(story.createdAt, context),
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                if (story.lat != null && story.lon != null) ...[
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.location_on,
+                                    size: 14,
+                                    color: Colors.blue[500],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            title: Text(story.name),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  DateTimeUtils.getRelativeTime(story.createdAt, context),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-            isThreeLine: true,
-            onTap: () {
-              context.goNamed(
-                'story-detail',
-                pathParameters: {'storyId': story.id},
-                extra: story,
-              );
-            },
           ),
         );
       },

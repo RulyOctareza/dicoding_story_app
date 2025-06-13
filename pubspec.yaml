@@ -20,11 +20,23 @@ dependencies:
   provider: ^6.1.5
   shared_preferences: ^2.5.3
   workmanager: ^0.6.0
+  
+  # NEW: Code Generation
+  json_annotation: ^4.8.1
+  
+  # NEW: Maps & Location
+  google_maps_flutter: ^2.6.1
+  location: ^8.0.0
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  
+  # NEW: Code Generation
+  build_runner: ^2.4.9
+  json_serializable: ^6.7.1
 
 flutter:
   uses-material-design: true

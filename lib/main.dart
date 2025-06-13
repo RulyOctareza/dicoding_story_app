@@ -46,7 +46,14 @@ class MainApp extends StatelessWidget {
                 GlobalCupertinoLocalizations.delegate,
               ],
               title: 'Dicoding Story App',
-              theme: ThemeData(primarySwatch: Colors.blue),
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+                useMaterial3: true,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
             ),
       ),
     );

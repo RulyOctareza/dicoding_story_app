@@ -7,10 +7,10 @@ import '../models/story.dart';
 class StoryService {
   static const String baseUrl = 'https://story-api.dicoding.dev/v1';
 
-  Future<List<Story>> fetchStories(String token) async {
-    developer.log('Fetching stories...', name: 'StoryService');
+  Future<List<Story>> fetchStories(String token, {int page = 1, int size = 10}) async {
+    developer.log('Fetching stories (page: $page, size: $size)...', name: 'StoryService');
     final response = await http.get(
-      Uri.parse('$baseUrl/stories'),
+      Uri.parse('$baseUrl/stories?page=$page&size=$size'),
       headers: {'Authorization': 'Bearer $token'},
     );
     developer.log(
@@ -34,6 +34,8 @@ class StoryService {
     required String token,
     required String description,
     required File photo,
+    double? lat,
+    double? lon,
   }) async {
     developer.log('Uploading new story...', name: 'StoryService');
     final uri = Uri.parse('$baseUrl/stories');
@@ -42,6 +44,13 @@ class StoryService {
           ..headers['Authorization'] = 'Bearer $token'
           ..fields['description'] = description
           ..files.add(await http.MultipartFile.fromPath('photo', photo.path));
+
+    // Add location data if provided
+    if (lat != null && lon != null) {
+      request.fields['lat'] = lat.toString();
+      request.fields['lon'] = lon.toString();
+      developer.log('Adding location data: lat=$lat, lon=$lon', name: 'StoryService');
+    }
 
     developer.log('Sending story upload request...', name: 'StoryService');
     final response = await request.send();

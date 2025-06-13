@@ -6,6 +6,7 @@ import '../screens/register_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/add_story_screen.dart';
 import '../screens/story_detail_screen.dart';
+import '../screens/location_picker_screen.dart';
 import '../models/story.dart';
 
 class AppRouter {
@@ -39,32 +40,50 @@ class AppRouter {
               child: const RegisterScreen(),
             ),
       ),
+      // Main app route with nested structure
       GoRoute(
         path: '/home',
         name: 'home',
         pageBuilder:
             (context, state) =>
                 fadeTransition(key: state.pageKey, child: const HomeScreen()),
-      ),
-      GoRoute(
-        path: '/add-story',
-        name: 'add-story',
-        pageBuilder:
-            (context, state) => slideTransition(
-              key: state.pageKey,
-              child: const AddStoryScreen(),
-            ),
-      ),
-      GoRoute(
-        path: '/story/:storyId',
-        name: 'story-detail',
-        pageBuilder: (context, state) {
-          final story = state.extra as Story;
-          return slideTransition(
-            key: state.pageKey,
-            child: StoryDetailScreen(story: story),
-          );
-        },
+        routes: [
+          // Add story as child of home
+          GoRoute(
+            path: 'add-story',
+            name: 'home-add-story',
+            pageBuilder:
+                (context, state) => slideTransition(
+                  key: state.pageKey,
+                  child: const AddStoryScreen(),
+                ),
+            routes: [
+              // Location picker as child of add-story
+              GoRoute(
+                path: 'location-picker',
+                name: 'home-location-picker',
+                pageBuilder:
+                    (context, state) => slideTransition(
+                      key: state.pageKey,
+                      child: const LocationPickerScreen(),
+                    ),
+              ),
+            ],
+          ),
+
+          // Story detail as child of home
+          GoRoute(
+            path: 'story/:storyId',
+            name: 'home-story-detail',
+            pageBuilder: (context, state) {
+              final story = state.extra as Story;
+              return slideTransition(
+                key: state.pageKey,
+                child: StoryDetailScreen(story: story),
+              );
+            },
+          ),
+        ],
       ),
     ],
   );

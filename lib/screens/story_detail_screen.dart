@@ -7,6 +7,7 @@ import '../utils/date_time_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/state_widgets.dart';
 import '../widgets/network_image.dart';
+import '../widgets/story_map_widget.dart';
 
 class StoryDetailScreen extends StatelessWidget {
   final Story story;
@@ -71,6 +72,44 @@ class StoryDetailScreen extends StatelessWidget {
                       detail.description,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
+                    
+                    // Display map if location data exists
+                    if (detail.lat != null && detail.lon != null) ...[
+                      const SizedBox(height: 24),
+                      Card(
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Story Location',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                height: 200,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: StoryMapWidget(
+                                    story: detail,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

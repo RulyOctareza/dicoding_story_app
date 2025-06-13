@@ -12,10 +12,16 @@ class StoryProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   static const String _lastStoryIdKey = 'last_story_id';
+  
+  // NEW: Pagination properties
+  int _currentPage = 1;
+  bool _hasMoreData = true;
+  static const int _pageSize = 10;
 
   List<Story> get stories => _stories;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get hasMoreData => _hasMoreData;
 
   void _safeNotify() {
     if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
@@ -51,10 +57,17 @@ class StoryProvider extends ChangeNotifier {
   Future<void> fetchStories(String token) async {
     _setLoading(true);
     _error = null;
+    _currentPage = 1; // Reset pagination
+    _hasMoreData = true;
     try {
-      final newStories = await _service.fetchStories(token);
+      final newStories = await _service.fetchStories(token, page: _currentPage, size: _pageSize);
       _stories = newStories;
       await _checkForNewStories(newStories);
+      
+      // Check if we have more data
+      if (newStories.length < _pageSize) {
+        _hasMoreData = false;
+      }
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -62,7 +75,32 @@ class StoryProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addStory(String token, String description, File photo) async {
+  // NEW: Load more stories for pagination
+  Future<void> loadMoreStories(String token) async {
+    if (!_hasMoreData || _isLoading) return;
+    
+    try {
+      _currentPage++;
+      final newStories = await _service.fetchStories(token, page: _currentPage, size: _pageSize);
+      
+      if (newStories.isNotEmpty) {
+        _stories.addAll(newStories);
+        if (newStories.length < _pageSize) {
+          _hasMoreData = false;
+        }
+      } else {
+        _hasMoreData = false;
+      }
+      
+      _safeNotify();
+    } catch (e) {
+      _error = e.toString();
+      _currentPage--; // Revert page increment on error
+      _safeNotify();
+    }
+  }
+
+  Future<void> addStory(String token, String description, File photo, {double? lat, double? lon}) async {
     _setLoading(true);
     _error = null;
     try {
@@ -70,6 +108,8 @@ class StoryProvider extends ChangeNotifier {
         token: token,
         description: description,
         photo: photo,
+        lat: lat,
+        lon: lon,
       );
       await fetchStories(token);
     } catch (e) {

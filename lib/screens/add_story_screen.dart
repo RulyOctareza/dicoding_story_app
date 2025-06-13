@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
 import '../providers/story_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../models/location_data.dart';
 
 class AddStoryScreen extends StatefulWidget {
   const AddStoryScreen({super.key});
@@ -19,6 +20,7 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
   final _descController = TextEditingController();
   File? _imageFile;
   bool _isLoading = false;
+  LocationData? _selectedLocation;
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -31,6 +33,15 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
     if (picked != null) {
       setState(() {
         _imageFile = File(picked.path);
+      });
+    }
+  }
+
+  Future<void> _pickLocation() async {
+    final result = await context.pushNamed('home-location-picker');
+    if (result is LocationData) {
+      setState(() {
+        _selectedLocation = result;
       });
     }
   }
@@ -48,9 +59,11 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
         sessionProvider.token!,
         _descController.text,
         _imageFile!,
+        lat: _selectedLocation?.lat,
+        lon: _selectedLocation?.lon,
       );
       if (mounted) {
-        context.replaceNamed('home');
+        context.goNamed('home');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Story uploaded successfully!')),
         );
@@ -109,6 +122,123 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
                     label: const Text('Gallery'),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Location Section
+              Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Location (Optional)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_selectedLocation != null) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            border: Border.all(color: Colors.green.shade200),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Location selected:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _selectedLocation!.address.isNotEmpty 
+                                    ? _selectedLocation!.address 
+                                    : 'Lat: ${_selectedLocation!.lat.toStringAsFixed(4)}, Lon: ${_selectedLocation!.lon.toStringAsFixed(4)}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _pickLocation,
+                                icon: const Icon(Icons.edit_location),
+                                label: const Text('Change Location'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedLocation = null;
+                                  });
+                                },
+                                icon: const Icon(Icons.clear),
+                                label: const Text('Remove'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        const Text(
+                          'Add your current location or pick a location on the map to make your story more engaging.',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _pickLocation,
+                            icon: const Icon(Icons.add_location),
+                            label: const Text('Add Location'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(
