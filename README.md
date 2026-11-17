@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/preview/hero.png" alt="Dicoding Story App — ilustrasi aplikasi berbagi cerita" width="100%">
+  <img src="docs/preview/hero.svg" alt="Dicoding Story App — ilustrasi aplikasi berbagi cerita" width="100%">
 </p>
 
 <h1 align="center">Dicoding Story App</h1>
